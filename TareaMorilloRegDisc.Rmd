@@ -9,23 +9,37 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-EMPIEZA ACA!!!
+### Introducción
+Dentro de regresiones discontinuas, hay un tipo particular de estrategia y diseño metodológico que se ha hecho popular: el diseño de elecciones ajustadas. Esencialmente, este diseño explota una característica de las democracias americanas según la cual los ganadores de las contiendas políticas se declaran cuando un candidato obtiene el porcentaje mínimo necesario de votos. En la medida en que las elecciones muy reñidas representan asignaciones exógenas de la victoria de un partido, podemos utilizar estas elecciones reñidas para identificar el efecto causal del ganador en una serie de resultados. También podemos poner a prueba teorías de economía política que, de otro modo, serían casi imposibles de evaluar.
 
-##1
-```{r, echo=FALSE}
+¿Son los políticos o los votantes quienes eligen las políticas? La gran pregunta que motiva a Lee et al. (2004) tiene que ver con si los votantes afectan a la política y de qué manera. Hay dos visiones fundamentalmente diferentes del papel de las elecciones en una democracia representativa: la teoría de la convergencia y la teoría de la divergencia. La teoría de la convergencia afirma que la ideología heterogénea de los votantes obliga a cada candidato a moderar su posición. La teoría de la divergencia, por su parte, sostiene que cuando los políticos partidistas no pueden comprometerse de forma creíble con determinadas políticas, la convergencia se ve socavada y el resultado puede ser una "divergencia" política total. La divergencia se produce cuando el candidato ganador, tras tomar posesión de su cargo, se limita a aplicar su política preferida. En este caso extremo, los votantes son incapaces de obligar a los candidatos a alcanzar ningún tipo de compromiso político, lo que se traduce en dos candidatos opuestos que eligen políticas muy diferentes en distintos escenarios contrafactuales de victoria.
+
+### Modelo
+$R$ y $D$ son candidatos compitiendo por un escaño en el Congreso. El espacio político es una sola dimensión en la que las preferencias políticas de $R$ y $D$ en un periodo son funciones de pérdida cuadráticas, $u(l)$ y $v(l)$, y $l$ es la variable política.
+
+Cada jugador tiene un punto de felicidad, que es su posición preferida en la gama unidimensional de políticas. Para los demócratas, es $l* =c(>0)$, y para los republicanos es $l* = 0$. 
+
+El posible resultado de la votación nominal del candidato tras unas elecciones es:
+
+$$RC_t= D_t x_t+(1-D_t)y_t$$
+donde $D_t$ indica si un demócrata ganó las elecciones. Es decir, sólo se observa la política del candidato ganador. A contuniación se expresan las ecuaciones de regresión derivadas de la expresión anterior:
+
+$$RC_t= \alpha_0 +\pi_0 P^{*}_t+\pi_1 D_t+\varepsilon_t $$
+$$RC_{t+1}= \beta_0 +\pi_0 P^{*}_{t+1}+\pi_1 D_{t+1}+\varepsilon_{t+1}$$
+Donde $\alpha_0$ y $\beta_0$ son constantes y $P^{*}$ representa la popularidad subyacente del Partido Demócrata, o dicho de otro modo, la probabilidad de que $D$ ganara si la política elegida $x$ igualara el punto $c$ de felicidad del demócrata.
+
+Es importante destacar que la asignación aleatoria de $D_t$ es crucial. Porque sin ella, esta ecuación reflejaría $\pi_1$ y la selección (es decir, los distritos demócratas tienen puntos de felicidad más liberales). Así que los autores intentan aleatorizar $D_t$ utilizando un RDD. Para efectuar la asignacion aleatoria, los autores utilizan una variación posiblemente exógena en las victorias demócratas para comprobar si la convergencia o la divergencia son correctas. Si la convergencia es cierta, entonces los republicanos y los demócratas que apenas ganaron deberían votar casi idénticamente, mientras que si la divergencia es cierta, deberían votar de forma diferente en los márgenes de una carrera reñida. "En los márgenes de una carrera reñida" es crucial porque la idea es que es en los márgenes de una carrera reñida donde la distribución de las preferencias de los votantes es practicamnerte, la misma. Si las preferencias de los votantes son las mismas, pero las políticas divergen en el límite, esto sugiere que son los políticos, y no los votantes, los que dirigen la elaboración de las políticas.
+
+Pare replicar los resultados de los autores se utilizán regresiones limitadas a la ventana alrededor del punto de corte para estimar el efecto. Se trata de regresiones locales en el sentido de que utilizan datos cercanos al punto de corte. Sólo se utilizan observaciones entre 0,48 y 0,52 votos. Por tanto, esta regresión estima el coeficiente en torno al punto de corte. 
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+
 library(tidyverse)
 library(haven)
 library(estimatr)
 
-read_data <- function(df)
-{
-  full_path <- paste("https://raw.github.com/scunning1975/mixtape/master/", 
-                     df, sep = "")
-  df <- read_dta(full_path)
-  return(df)
-}
 
-lmb_data <- read_data("lmb-data.dta")
+lmb_data <- read_dta("data.dta")
 
 lmb_subset <- lmb_data %>% 
   filter(lagdemvoteshare>.48 & lagdemvoteshare<.52)
@@ -38,10 +52,17 @@ summary(lm_1)
 summary(lm_2)
 summary(lm_3)
 
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
-##2
-```{r, echo=FALSE}
+
+Cuando se utilizan todos los datos, obtenemos efectos algo diferentes. El efecto sobre los resultados futuros del Americans for Democratic Action (ADA) aumenta en 10 puntos, pero el efecto contemporáneo disminuye. Sin embargo, el efecto sobre la ocupación del cargo aumenta considerablemente. Así que aquí vemos que simplemente ejecutando la regresión se obtienen estimaciones diferentes cuando incluimos datos alejados del propio punto de corte.
+
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
 #using all data (note data used is lmb_data, not lmb_subset)
+
 lm_1 <- lm_robust(score ~ lagdemocrat, data = lmb_data, clusters = id)
 lm_2 <- lm_robust(score ~ democrat, data = lmb_data, clusters = id)
 lm_3 <- lm_robust(democrat ~ lagdemocrat, data = lmb_data, clusters = id)
@@ -49,9 +70,20 @@ lm_3 <- lm_robust(democrat ~ lagdemocrat, data = lmb_data, clusters = id)
 summary(lm_1)
 summary(lm_2)
 summary(lm_3)
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
-##3
-```{r, echo=FALSE}
+
+
+Sin embargo, ninguna de estas regresiones incluye controles para la running variable. Tampoco se utiliza el recentrado de la variable de ejecución. Para incorporar estos dos puntos, simplemente restaremos 0,5 a la variable de funcionamiento, de forma que los valores de 0 sean aquellos en los que el porcentaje de votos sea igual a 0,5, los valores negativos sean los porcentajes de votos demócratas inferiores a 0,5 y los valores positivos sean los porcentajes de votos demócratas superiores a 0,5. 
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(haven)
+library(estimatr)
+
+lmb_data <- read_dta("data.dta")
 lmb_data <- lmb_data %>% 
   mutate(demvoteshare_c = demvoteshare - 0.5)
 
@@ -62,10 +94,24 @@ lm_3 <- lm_robust(democrat ~ lagdemocrat + demvoteshare_c, data = lmb_data, clus
 summary(lm_1)
 summary(lm_2)
 summary(lm_3)
+
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
 
-##4
-```{r, echo=FALSE}
+Es habitual permitir que la variable en curso varíe a ambos lados de la discontinuidad, Para implementarlo necesitamos que haya una línea de regresión a cada lado, lo que significa necesariamente que tenemos dos líneas a la izquierda y a la derecha de la discontinuidad. Para ello, necesitamos una interacción, específicamente, entre la variable de ejecución con la variable de tratamiento. 
+
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(haven)
+library(estimatr)
+
+lmb_data <- read_dta("data.dta")
+lmb_data <- lmb_data %>% 
+  mutate(demvoteshare_c = demvoteshare - 0.5)
+
 lm_1 <- lm_robust(score ~ lagdemocrat*demvoteshare_c, 
                   data = lmb_data, clusters = id)
 lm_2 <- lm_robust(score ~ democrat*demvoteshare_c, 
@@ -76,11 +122,24 @@ lm_3 <- lm_robust(democrat ~ lagdemocrat*demvoteshare_c,
 summary(lm_1)
 summary(lm_2)
 summary(lm_3)
+
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
 
-##5
-```{r, echo=FALSE}
-lmb_data <- lmb_data %>% 
+Por último, se estimará el modelo con una cuadrática. La inclusión de la cuadrática hace que el efecto estimado de una victoria democrática sobre el voto futuro disminuya considerablemente: 
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(haven)
+library(estimatr)
+
+lmb_data <- read_dta("data.dta")
+
+lmb_data <- lmb_data %>%
+  mutate(demvoteshare_c = demvoteshare - 0.5)
+lmb_data <- lmb_data %>%  
   mutate(demvoteshare_sq = demvoteshare_c^2)
 
 lm_1 <- lm_robust(score ~ lagdemocrat*demvoteshare_c + lagdemocrat*demvoteshare_sq, 
@@ -93,13 +152,26 @@ lm_3 <- lm_robust(democrat ~ lagdemocrat*demvoteshare_c + lagdemocrat*demvotesha
 summary(lm_1)
 summary(lm_2)
 summary(lm_3)
+
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
 
-##6
-```{r, echo=FALSE}
+Esto sugiere que existen fuertes valores atípicos en los datos que están causando que la distancia en $c_0$ se extienda más ampliamente. Así que una solución natural es limitar de nuevo nuestro análisis a una ventana más pequeña. Lo que esto hace es descartar las observaciones alejadas de $c_0$ y omitir la influencia de los valores atípicos de nuestra estimación en el punto de corte. Esta vez utilizaremos +/- -0,05. Cuando limitamos nuestro análisis a 0,05 alrededor del punto de corte, se utilizan más observaciones lejos del punto de corte que las que se utilizaron en nuestro análisis inicial. Por eso sólo tenemos 2.441 observaciones para el análisis, frente a las 915 que teníamos en nuestro análisis original.
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(haven)
+library(estimatr)
+
+lmb_data <- read_dta("data.dta")
 
 lmb_data <- lmb_data %>% 
-  filter(demvoteshare > .45 & demvoteshare < .55) %>%
+  filter(demvoteshare > .45 & demvoteshare < .55)
+lmb_data <- lmb_data %>%
+  mutate(demvoteshare_c = demvoteshare - 0.5)
+lmb_data <- lmb_data %>%
   mutate(demvoteshare_sq = demvoteshare_c^2)
 
 lm_1 <- lm_robust(score ~ lagdemocrat*demvoteshare_c + lagdemocrat*demvoteshare_sq, 
@@ -112,10 +184,16 @@ lm_3 <- lm_robust(democrat ~ lagdemocrat*demvoteshare_c + lagdemocrat*demvotesha
 summary(lm_1)
 summary(lm_2)
 summary(lm_3)
+
+library(modelsummary)
+modelsummary::modelsummary(list(lm_1, lm_2, lm_3), stars= TRUE, fmt=3, 
+                           estimate = "{estimate} ({std.error}){stars}", statistic=NULL,  gof_omit = "AIC|BIC|Lik")
 ```
 
-##7
-```{r, echo=FALSE}
+Los métodos no paramétricos significan muchas cosas diferentes para distintas personas en estadística, pero en contextos de RDD, la idea es estimar un modelo que no asuma una forma funcional para la relación entre la variable de resultado (Y) y la variable de ejecución (X). A continuación se presentan gráficamente distintas opciones de ajuste, lineal, cuadrático y lowess:
+
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
 #aggregating the data
 categories <- lmb_data$lagdemvoteshare
 
@@ -149,10 +227,20 @@ ggplot(lmb_data, aes(lagdemvoteshare, score)) +
   geom_vline(xintercept = 0.5)
 ```
 
-##8 Aca esta el problema
-```{r, echo=FALSE}
+Hahn, Todd y Klaauw (2001) han demostrado que la estimación kernel unilateral, como lowess, puede tener propiedades deficientes porque el punto de interés se encuentra en el límite (es decir, la discontinuidad). Esto se llama el "problema del límite". Proponen utilizar en su lugar regresiones lineales locales no paramétricas. En estas regresiones, se da más peso a las observaciones del centro.
+También puede estimar regresiones polinómicas locales ponderadas por kernel, una regresión ponderada restringida a una ventana como las que se han realizado previamnete, donde el kernel elegido proporciona los pesos. 
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+rm(list=ls())
+
 library(tidyverse)
 library(stats)
+library(tidyverse)
+library(haven)
+library(estimatr)
+
+lmb_data <- read_dta("data.dta")
+
 
 smooth_dem0 <- lmb_data %>% 
   filter(democrat == 0) %>% 
@@ -173,19 +261,23 @@ ggplot() +
   geom_smooth(aes(x, y), data = smooth_dem1) +
   geom_vline(xintercept = 0.5)
 ```
+Debido a que el supuesto de continuidad implica específicamente funciones de expectativas condicionales continuas de los resultados potenciales a lo largo de la línea de corte, por lo tanto, no se puede probar. Eso es correcto, es un supuesto no comprobable. Pero, lo que podemos hacer es comprobar si hay cambios en las funciones de expectativa condicional para otras covariables exógenas que no pueden o no deben cambiar como resultado del corte. Luego, la importancia de la selección del ancho de banda, o ventana, para estimar el efecto causal utilizando este método, así como la importancia de la selección de la longitud del polinomio. A la hora de elegir el ancho de banda, siempre hay un equilibrio entre el sesgo y la varianza: cuanto más corta es la ventana, menor es el sesgo, pero al tener menos datos, aumenta la varianza de la estimación.
 
-##9
-```{r, echo=FALSE}
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rdrobust)
 
 rdr <- rdrobust(y = lmb_data$score,
                 x = lmb_data$demvoteshare, c = 0.5)
 summary(rdr)
+
 ```
 
-##10
-```{r, echo=FALSE}
+Lo ideal es utilizar este tipo de métodos cuando se dispone de un gran número de observaciones en la muestra, de forma que se tenga un número considerable de observaciones en la discontinuidad. En ese caso, debería haber cierta armonía entre los resultados. Si no es así, es posible que no tenga suficiente potencia para detectar este efecto.
+
+Por último, se examina la implementación de la prueba de densidad de McCrary, utilizando la estimación de densidad polinómica local (Cattaneo, Jansson y Ma 2019) y no se obtiene evidencia de que haya habido manipulación en la variable de ejecución en el punto de corte.
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rddensity)
 library(rdd)
