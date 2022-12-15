@@ -255,6 +255,7 @@ Lo ideal es utilizar este tipo de métodos cuando se dispone de un gran número 
 <div style="text-align: justify">
 Por último, se examina la implementación de la prueba de densidad de McCrary, utilizando la estimación de densidad polinómica local (Cattaneo, Jansson y Ma 2019) y no se obtiene evidencia de que haya habido manipulación en la variable de ejecución en el punto de corte.
 <div/>
+
 ```{r, echo=FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rddensity)
@@ -266,4 +267,3 @@ DCdensity(lmb_data$demvoteshare, cutpoint = 0.5, verbose = FALSE)
 density <- rddensity(lmb_data$demvoteshare, c = 0.5)
 rdplotdensity(density, lmb_data$demvoteshare)
 ```
-
