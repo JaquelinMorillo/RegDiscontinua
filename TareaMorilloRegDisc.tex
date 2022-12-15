@@ -1,0 +1,469 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{siunitx}
+
+  \newcolumntype{d}{S[
+    input-open-uncertainty=,
+    input-close-uncertainty=,
+    parse-numbers = false,
+    table-align-text-pre=false,
+    table-align-text-post=false
+  ]}
+  
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Tarea Regresión Discontinua},
+  pdfauthor={Jaquelin Morillo},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Tarea Regresión Discontinua}
+\author{Jaquelin Morillo}
+\date{2022-12-15}
+
+\begin{document}
+\maketitle
+
+\hypertarget{introducciuxf3n}{%
+\subsubsection{Introducción}\label{introducciuxf3n}}
+
+Dentro de regresiones discontinuas, hay un tipo particular de estrategia
+y diseño metodológico que se ha hecho popular: el diseño de elecciones
+ajustadas. Esencialmente, este diseño explota una característica de las
+democracias americanas según la cual los ganadores de las contiendas
+políticas se declaran cuando un candidato obtiene el porcentaje mínimo
+necesario de votos. En la medida en que las elecciones muy reñidas
+representan asignaciones exógenas de la victoria de un partido, podemos
+utilizar estas elecciones reñidas para identificar el efecto causal del
+ganador en una serie de resultados. También podemos poner a prueba
+teorías de economía política que, de otro modo, serían casi imposibles
+de evaluar.
+
+¿Son los políticos o los votantes quienes eligen las políticas? La gran
+pregunta que motiva a Lee et al.~(2004) tiene que ver con si los
+votantes afectan a la política y de qué manera. Hay dos visiones
+fundamentalmente diferentes del papel de las elecciones en una
+democracia representativa: la teoría de la convergencia y la teoría de
+la divergencia. La teoría de la convergencia afirma que la ideología
+heterogénea de los votantes obliga a cada candidato a moderar su
+posición. La teoría de la divergencia, por su parte, sostiene que cuando
+los políticos partidistas no pueden comprometerse de forma creíble con
+determinadas políticas, la convergencia se ve socavada y el resultado
+puede ser una ``divergencia'' política total. La divergencia se produce
+cuando el candidato ganador, tras tomar posesión de su cargo, se limita
+a aplicar su política preferida. En este caso extremo, los votantes son
+incapaces de obligar a los candidatos a alcanzar ningún tipo de
+compromiso político, lo que se traduce en dos candidatos opuestos que
+eligen políticas muy diferentes en distintos escenarios contrafactuales
+de victoria.
+
+\hypertarget{modelo}{%
+\subsubsection{Modelo}\label{modelo}}
+
+\(R\) y \(D\) son candidatos compitiendo por un escaño en el Congreso.
+El espacio político es una sola dimensión en la que las preferencias
+políticas de \(R\) y \(D\) en un periodo son funciones de pérdida
+cuadráticas, \(u(l)\) y \(v(l)\), y \(l\) es la variable política.
+
+Cada jugador tiene un punto de felicidad, que es su posición preferida
+en la gama unidimensional de políticas. Para los demócratas, es
+\(l* =c(>0)\), y para los republicanos es \(l* = 0\).
+
+El posible resultado de la votación nominal del candidato tras unas
+elecciones es:
+
+\[RC_t= D_t x_t+(1-D_t)y_t\]
+
+Donde \(D_t\) indica si un demócrata ganó las elecciones. Es decir, sólo
+se observa la política del candidato ganador. A contuniación se expresan
+las ecuaciones de regresión derivadas de la expresión anterior:
+
+\[RC_t= \alpha_0 +\pi_0 P^{*}_t+\pi_1 D_t+\varepsilon_t \]
+\[RC_{t+1}= \beta_0 +\pi_0 P^{*}_{t+1}+\pi_1 D_{t+1}+\varepsilon_{t+1}\]
+
+Donde \(\alpha_0\) y \(\beta_0\) son constantes y \(P^{*}\) representa
+la popularidad subyacente del Partido Demócrata, o dicho de otro modo,
+la probabilidad de que \(D\) ganara si la política elegida \(x\)
+igualara el punto \(c\) de felicidad del demócrata.
+
+Es importante destacar que la asignación aleatoria de \(D_t\) es
+crucial. Porque sin ella, esta ecuación reflejaría \(\pi_1\) y la
+selección (es decir, los distritos demócratas tienen puntos de felicidad
+más liberales). Así que los autores intentan aleatorizar \(D_t\)
+utilizando un RDD. Para efectuar la asignacion aleatoria, los autores
+utilizan una variación posiblemente exógena en las victorias demócratas
+para comprobar si la convergencia o la divergencia son correctas. Si la
+convergencia es cierta, entonces los republicanos y los demócratas que
+apenas ganaron deberían votar casi idénticamente, mientras que si la
+divergencia es cierta, deberían votar de forma diferente en los márgenes
+de una carrera reñida. ``En los márgenes de una carrera reñida'' es
+crucial porque la idea es que es en los márgenes de una carrera reñida
+donde la distribución de las preferencias de los votantes es
+practicamnerte, la misma. Si las preferencias de los votantes son las
+mismas, pero las políticas divergen en el límite, esto sugiere que son
+los políticos, y no los votantes, los que dirigen la elaboración de las
+políticas.
+
+Pare replicar los resultados de los autores se utilizán regresiones
+limitadas a la ventana alrededor del punto de corte para estimar el
+efecto. Se trata de regresiones locales en el sentido de que utilizan
+datos cercanos al punto de corte. Sólo se utilizan observaciones entre
+0,48 y 0,52 votos. Por tanto, esta regresión estima el coeficiente en
+torno al punto de corte.
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{31.196}*** & \num{18.747}*** & \num{0.242}***\\
+lagdemocrat & \num{21.284}*** &  & \num{0.484}***\\
+democrat &  & \num{47.706}*** & \\
+\midrule
+Num.Obs. & \num{915} & \num{915} & \num{915}\\
+R2 & \num{0.115} & \num{0.578} & \num{0.235}\\
+R2 Adj. & \num{0.114} & \num{0.578} & \num{0.234}\\
+RMSE & \num{29.49} & \num{20.36} & \num{0.44}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cuando se utilizan todos los datos, obtenemos efectos algo diferentes.
+El efecto sobre los resultados futuros del Americans for Democratic
+Action (ADA) aumenta en 10 puntos, pero el efecto contemporáneo
+disminuye. Sin embargo, el efecto sobre la ocupación del cargo aumenta
+considerablemente. Así que aquí vemos que simplemente ejecutando la
+regresión se obtienen estimaciones diferentes cuando incluimos datos
+alejados del propio punto de corte.
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{23.539}*** & \num{17.576}*** & \num{0.120}***\\
+lagdemocrat & \num{31.506}*** &  & \num{0.818}***\\
+democrat &  & \num{40.763}*** & \\
+\midrule
+Num.Obs. & \num{13588} & \num{13588} & \num{13588}\\
+R2 & \num{0.227} & \num{0.376} & \num{0.676}\\
+R2 Adj. & \num{0.227} & \num{0.376} & \num{0.676}\\
+RMSE & \num{28.69} & \num{25.78} & \num{0.28}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Sin embargo, ninguna de estas regresiones incluye controles para la
+running variable. Tampoco se utiliza el recentrado de la variable de
+ejecución. Para incorporar estos dos puntos, simplemente restaremos 0,5
+a la variable de funcionamiento, de forma que los valores de 0 sean
+aquellos en los que el porcentaje de votos sea igual a 0,5, los valores
+negativos sean los porcentajes de votos demócratas inferiores a 0,5 y
+los valores positivos sean los porcentajes de votos demócratas
+superiores a 0,5.
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{22.883}*** & \num{11.034}*** & \num{0.212}***\\
+lagdemocrat & \num{33.451}*** &  & \num{0.552}***\\
+demvoteshare\_c & \num{-5.626}** & \num{-48.938}*** & \num{0.773}***\\
+democrat &  & \num{58.502}*** & \\
+\midrule
+Num.Obs. & \num{13577} & \num{13577} & \num{13577}\\
+R2 & \num{0.227} & \num{0.424} & \num{0.735}\\
+R2 Adj. & \num{0.227} & \num{0.424} & \num{0.735}\\
+RMSE & \num{28.68} & \num{24.76} & \num{0.25}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Es habitual permitir que la variable en curso varíe a ambos lados de la
+discontinuidad, Para implementarlo necesitamos que haya una línea de
+regresión a cada lado, lo que significa necesariamente que tenemos dos
+líneas a la izquierda y a la derecha de la discontinuidad. Para ello,
+necesitamos una interacción, específicamente, entre la variable de
+ejecución con la variable de tratamiento.
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{31.435}*** & \num{16.816}*** & \num{0.287}***\\
+lagdemocrat & \num{30.508}*** &  & \num{0.526}***\\
+demvoteshare\_c & \num{66.042}*** & \num{-5.683}* & \num{1.403}***\\
+lagdemocrat × demvoteshare\_c & \num{-96.475}*** &  & \num{-0.849}***\\
+democrat &  & \num{55.431}*** & \\
+democrat × demvoteshare\_c &  & \num{-55.152}*** & \\
+\midrule
+Num.Obs. & \num{13577} & \num{13577} & \num{13577}\\
+R2 & \num{0.267} & \num{0.434} & \num{0.749}\\
+R2 Adj. & \num{0.267} & \num{0.434} & \num{0.749}\\
+RMSE & \num{27.94} & \num{24.54} & \num{0.25}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Por último, se estimará el modelo con una cuadrática. La inclusión de la
+cuadrática hace que el efecto estimado de una victoria democrática sobre
+el voto futuro disminuya considerablemente:
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{33.547}*** & \num{15.606}*** & \num{0.330}***\\
+lagdemocrat & \num{13.030}*** &  & \num{0.322}***\\
+demvoteshare\_c & \num{134.977}*** & \num{-23.850}*** & \num{2.798}***\\
+demvoteshare\_sq & \num{212.127}*** & \num{-41.729}** & \num{4.294}***\\
+lagdemocrat × demvoteshare\_c & \num{57.055}*** &  & \num{0.091}\\
+lagdemocrat × demvoteshare\_sq & \num{-641.851}*** &  & \num{-8.804}***\\
+democrat &  & \num{44.402}*** & \\
+democrat × demvoteshare\_c &  & \num{111.896}*** & \\
+democrat × demvoteshare\_sq &  & \num{-229.954}*** & \\
+\midrule
+Num.Obs. & \num{13577} & \num{13577} & \num{13577}\\
+R2 & \num{0.371} & \num{0.456} & \num{0.822}\\
+R2 Adj. & \num{0.370} & \num{0.456} & \num{0.822}\\
+RMSE & \num{25.89} & \num{24.07} & \num{0.21}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Esto sugiere que existen fuertes valores atípicos en los datos que están
+causando que la distancia en \(c_0\) se extienda más ampliamente. Así
+que una solución natural es limitar de nuevo nuestro análisis a una
+ventana más pequeña. Lo que esto hace es descartar las observaciones
+alejadas de \(c_0\) y omitir la influencia de los valores atípicos de
+nuestra estimación en el punto de corte. Esta vez utilizaremos +/-
+-0,05. Cuando limitamos nuestro análisis a 0,05 alrededor del punto de
+corte, se utilizan más observaciones lejos del punto de corte que las
+que se utilizaron en nuestro análisis inicial. Por eso sólo tenemos
+2.441 observaciones para el análisis, frente a las 915 que teníamos en
+nuestro análisis original.
+
+\begin{table}
+\centering
+\begin{tabular}[t]{lccc}
+\toprule
+  & Model 1 & Model 2 & Model 3\\
+\midrule
+(Intercept) & \num{37.121}*** & \num{21.437}*** & \num{0.418}***\\
+lagdemocrat & \num{7.347}*** &  & \num{0.167}***\\
+demvoteshare\_c & \num{830.925}*** & \num{450.846}** & \num{15.699}***\\
+demvoteshare\_sq & \num{5333.335}*** & \num{7878.904}** & \num{91.607}***\\
+lagdemocrat × demvoteshare\_c & \num{-156.876}*** &  & \num{0.125}\\
+lagdemocrat × demvoteshare\_sq & \num{-10116.678}*** &  & \num{-188.329}***\\
+democrat &  & \num{45.191}*** & \\
+democrat × demvoteshare\_c &  & \num{-688.343}** & \\
+democrat × demvoteshare\_sq &  & \num{-3887.820} & \\
+\midrule
+Num.Obs. & \num{2387} & \num{2387} & \num{2387}\\
+R2 & \num{0.445} & \num{0.563} & \num{0.774}\\
+R2 Adj. & \num{0.444} & \num{0.562} & \num{0.774}\\
+RMSE & \num{23.50} & \num{20.86} & \num{0.24}\\
+Std.Errors & by: id & by: id & by: id\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Los métodos no paramétricos significan muchas cosas diferentes para
+distintas personas en estadística, pero en contextos de RDD, la idea es
+estimar un modelo que no asuma una forma funcional para la relación
+entre la variable de resultado (Y) y la variable de ejecución (X). A
+continuación se presentan gráficamente distintas opciones de ajuste,
+lineal, cuadrático y lowess:
+
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-7-1.pdf}
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-7-2.pdf}
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-7-3.pdf}
+
+Hahn, Todd y Klaauw (2001) han demostrado que la estimación kernel
+unilateral, como lowess, puede tener propiedades deficientes porque el
+punto de interés se encuentra en el límite (es decir, la
+discontinuidad). Esto se llama el ``problema del límite''. Proponen
+utilizar en su lugar regresiones lineales locales no paramétricas. En
+estas regresiones, se da más peso a las observaciones del centro.
+
+También puede estimar regresiones polinómicas locales ponderadas por
+kernel, una regresión ponderada restringida a una ventana como las que
+se han realizado previamnete, donde el kernel elegido proporciona los
+pesos.
+
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+Debido a que el supuesto de continuidad implica específicamente
+funciones de expectativas condicionales continuas de los resultados
+potenciales a lo largo de la línea de corte, por lo tanto, no se puede
+probar. Eso es correcto, es un supuesto no comprobable. Pero, lo que
+podemos hacer es comprobar si hay cambios en las funciones de
+expectativa condicional para otras covariables exógenas que no pueden o
+no deben cambiar como resultado del corte. Luego, la importancia de la
+selección del ancho de banda, o ventana, para estimar el efecto causal
+utilizando este método, así como la importancia de la selección de la
+longitud del polinomio. A la hora de elegir el ancho de banda, siempre
+hay un equilibrio entre el sesgo y la varianza: cuanto más corta es la
+ventana, menor es el sesgo, pero al tener menos datos, aumenta la
+varianza de la estimación.
+
+\begin{verbatim}
+## Sharp RD estimates using local polynomial regression.
+## 
+## Number of Obs.                13577
+## BW type                       mserd
+## Kernel                   Triangular
+## VCE method                       NN
+## 
+## Number of Obs.                 5480         8097
+## Eff. Number of Obs.            2112         1893
+## Order est. (p)                    1            1
+## Order bias  (q)                   2            2
+## BW est. (h)                   0.086        0.086
+## BW bias (b)                   0.141        0.141
+## rho (h/b)                     0.609        0.609
+## Unique Obs.                    2770         3351
+## 
+## =============================================================================
+##         Method     Coef. Std. Err.         z     P>|z|      [ 95% C.I. ]       
+## =============================================================================
+##   Conventional    46.491     1.241    37.477     0.000    [44.060 , 48.923]    
+##         Robust         -         -    31.425     0.000    [43.293 , 49.052]    
+## =============================================================================
+\end{verbatim}
+
+Lo ideal es utilizar este tipo de métodos cuando se dispone de un gran
+número de observaciones en la muestra, de forma que se tenga un número
+considerable de observaciones en la discontinuidad. En ese caso, debería
+haber cierta armonía entre los resultados. Si no es así, es posible que
+no tenga suficiente potencia para detectar este efecto.
+
+Por último, se examina la implementación de la prueba de densidad de
+McCrary, utilizando la estimación de densidad polinómica local
+(Cattaneo, Jansson y Ma 2019) y no se obtiene evidencia de que haya
+habido manipulación en la variable de ejecución en el punto de corte.
+
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{verbatim}
+## [1] 0.5925909
+\end{verbatim}
+
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-10-2.pdf}
+
+\begin{verbatim}
+## $Estl
+## Call: lpdensity
+## 
+## Sample size                                      5480
+## Polynomial order for point estimation    (p=)    2
+## Order of derivative estimated            (v=)    1
+## Polynomial order for confidence interval (q=)    3
+## Kernel function                                  triangular
+## Scaling factor                                   0.40357984678845
+## Bandwidth method                                 user provided
+## 
+## Use summary(...) to show estimates.
+## 
+## $Estr
+## Call: lpdensity
+## 
+## Sample size                                      8097
+## Polynomial order for point estimation    (p=)    2
+## Order of derivative estimated            (v=)    1
+## Polynomial order for confidence interval (q=)    3
+## Kernel function                                  triangular
+## Scaling factor                                   0.596346493812611
+## Bandwidth method                                 user provided
+## 
+## Use summary(...) to show estimates.
+## 
+## $Estplot
+\end{verbatim}
+
+\includegraphics{TareaMorilloRegDisc_files/figure-latex/unnamed-chunk-10-3.pdf}
+
+\end{document}
